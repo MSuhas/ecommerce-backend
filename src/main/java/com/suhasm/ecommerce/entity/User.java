@@ -30,7 +30,6 @@ public class User {
     private String email;
     @Column(nullable = false)
     @NotBlank
-    @Size(min = 8, max = 20)
     private String password;
     @NotBlank
     private String phone;
