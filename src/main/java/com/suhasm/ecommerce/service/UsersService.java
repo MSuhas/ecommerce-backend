@@ -15,7 +15,6 @@ public class UsersService {
 
     private final CurrentUserService currentUserService;
     private final UserMapper userMapper;
-    private final UserRepository userRepository;
 
     public UserResponseDTO getCurrentUser() {
 

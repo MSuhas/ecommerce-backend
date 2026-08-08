@@ -124,4 +124,22 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
+
+
+
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<ErrorResponse> handleInsufficientStockException(
+            RoleNotFoundException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_ACCEPTABLE.value(),
+                "Product Not in Stock",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+                .body(error);
+    }
 }
