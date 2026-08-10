@@ -2,10 +2,17 @@ package com.suhasm.ecommerce.dto;
 
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
+
 
 import java.math.BigDecimal;
 
@@ -26,7 +33,7 @@ public class ProductRequestDTO {
     @PositiveOrZero(message = "stock cannot be negative")
     private Integer stock;
 
-    @NonNull
+    @NotNull
     @Positive(message = "categoryId must be greater than zero")
     private Long categoryId;
 }

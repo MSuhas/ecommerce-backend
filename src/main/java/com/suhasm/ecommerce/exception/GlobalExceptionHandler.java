@@ -111,7 +111,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticatedUserNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleAuthenticatedUserNotFound(
-            RoleNotFoundException ex,
+            AuthenticatedUserNotFoundException ex,
             HttpServletRequest request){
 
         ErrorResponse error = new ErrorResponse(
@@ -125,21 +125,35 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
-
-
     @ExceptionHandler(InsufficientStockException.class)
     public ResponseEntity<ErrorResponse> handleInsufficientStockException(
-            RoleNotFoundException ex,
+            InsufficientStockException ex,
             HttpServletRequest request){
 
         ErrorResponse error = new ErrorResponse(
                 LocalDateTime.now(),
-                HttpStatus.NOT_ACCEPTABLE.value(),
+                HttpStatus.CONFLICT.value(),
                 "Product Not in Stock",
                 ex.getMessage(),
                 request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE)
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(CartNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleCartNotFoundException(
+            CartNotFoundException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Cart Not Found",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(error);
     }
 }

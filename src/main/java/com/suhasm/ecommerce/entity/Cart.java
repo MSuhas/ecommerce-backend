@@ -31,4 +31,12 @@ public class Cart {
     )
     @Builder.Default
     private List<CartItem> cartItems = new ArrayList<>();
+
+    public void removeCartItem(CartItem cartItem) {
+        cartItems.remove(cartItem);
+    }
+
+    public void clearCart() {
+        cartItems.clear();
+    }
 }
