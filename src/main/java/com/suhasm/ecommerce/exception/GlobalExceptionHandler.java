@@ -205,4 +205,68 @@ public class GlobalExceptionHandler {
                 .body(error);
     }
 
+    @ExceptionHandler(PaymentAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentAlreadyExistsException(
+            PaymentAlreadyExistsException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Payment already exists",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(InvalidPaymentOrderStatusException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidPaymentOrderStatusException(
+            InvalidPaymentOrderStatusException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                "Invalid Payment Order Status",
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(PaymentNotFoundException .class)
+    public ResponseEntity<ErrorResponse> handlePaymentNotFoundException(
+            PaymentNotFoundException ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
+    @ExceptionHandler(InvalidPaymentStatusException .class)
+    public ResponseEntity<ErrorResponse> handleInvalidPaymentStatusException (
+            InvalidPaymentStatusException  ex,
+            HttpServletRequest request){
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage(),
+                ex.getMessage(),
+                request.getRequestURI());
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(error);
+    }
+
 }
