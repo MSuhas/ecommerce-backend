@@ -39,6 +39,10 @@ public class SecurityConfig {
                         authorizationManagerRequestMatcherRegistry
                                 .requestMatchers("/api/auth/*")
                                 .permitAll()
+                                .requestMatchers("/payment-test.html")
+                                .permitAll()
+                                .requestMatchers("/api/payments/webhook")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated());
         httpSecurity.sessionManagement(

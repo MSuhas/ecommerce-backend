@@ -44,4 +44,10 @@ public class Payment {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "provider_payment_id", unique = true)
+    private String providerPaymentId;
+
+    @Column(name = "provider_order_id", unique = true)
+    private String providerOrderId;
 }

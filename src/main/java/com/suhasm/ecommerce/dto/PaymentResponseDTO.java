@@ -18,4 +18,5 @@ public class PaymentResponseDTO {
     private PaymentStatus status;
     private BigDecimal amount;
     private LocalDateTime createdAt;
+    private String providerOrderId;
 }

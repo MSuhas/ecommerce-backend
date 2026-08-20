@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Razorpay Test Payment</title>
+</head>
+
+<body>
+
+<h2>Razorpay Test Payment</h2>
+
+<label>
+    JWT Token:
+    <input
+            type="text"
+            id="token"
+            size="80"
+            placeholder="Paste your Bearer token here"
+    >
+</label>
+
+<label>
+    Order ID:
+    <input type="number" id="orderId" value="7">
+</label>
+
+<button id="payButton">
+    Pay Now
+</button>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    document.getElementById("payButton").onclick = async function () {
+
+        const orderId =
+            document.getElementById("orderId").value;
+
+        // Step 1: Ask our backend to create the payment
+        const token = document.getElementById("token").value;
+        const response = await fetch(
+            `/api/payments/orders/${orderId}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            const errorBody = await response.text();
+
+            console.log("Status:", response.status);
+            console.log("Error:", errorBody);
+
+            alert(`Payment creation failed\n\nHTTP ${response.status}\n${errorBody}`);
+
+            return;
+        }
+
+        const payment = await response.json();
+
+        console.log("Backend payment:", payment);
+
+        // Step 2: Open Razorpay Checkout
+        const options = {
+            key: "rzp_test_TQdL1BtdvpcWx8",
+
+            amount: Math.round(payment.amount * 100),
+
+            currency: "INR",
+
+            name: "Suhas E-Commerce",
+
+            description: "Test Transaction",
+
+            order_id: payment.providerOrderId,
+
+            handler: async function (razorpayResponse) {
+
+                console.log(
+                    "Razorpay Checkout response:",
+                    razorpayResponse
+                );
+
+                alert(
+                    "Payment completed in Razorpay.\n" +
+                    "Waiting for backend webhook..."
+                );
+
+               /* const response = await fetch("/api/payments/verify", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        razorpayPaymentId:
+                        razorpayResponse.razorpay_payment_id,
+
+                        razorpayOrderId:
+                        razorpayResponse.razorpay_order_id,
+
+                        razorpaySignature:
+                        razorpayResponse.razorpay_signature
+                    })
+                });
+
+                const result = await response.json();
+
+                console.log("Backend verification:", result);
+
+                if (!response.ok) {
+                    alert("Payment verification failed");
+                    return;
+                }
+
+                alert("Payment verified successfully!");*/
+            }
+        };
+
+        const razorpay =
+            new Razorpay(options);
+
+        razorpay.open();
+    };
+</script>
+
+</body>
+</html>

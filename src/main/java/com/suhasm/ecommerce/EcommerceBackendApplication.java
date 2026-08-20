@@ -11,6 +11,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 public class EcommerceBackendApplication {
 
 	public static void main(String[] args) {
+		System.out.println("RAZORPAY_KEY_ID = "
+				+ System.getenv("RAZORPAY_KEY_ID"));
+
+		System.out.println("RAZORPAY_KEY_SECRET present = "
+				+ (System.getenv("RAZORPAY_KEY_SECRET") != null));
 		SpringApplication.run(
 				EcommerceBackendApplication.class, args);
 		System.out.println("Pass: " +
