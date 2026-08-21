@@ -51,7 +51,9 @@ public class OrderService {
 
         for (CartItem cartItem : cartItems) {
 
-            Product product = cartItem.getProduct();
+            Long productId = cartItem.getProduct().getId();
+            Product product = productRepository.findByIdForUpdate(productId)
+                    .orElseThrow(() -> new ProductNotFoundException(productId));
 
             if (product.getStock() < cartItem.getQuantity()) {
                 throw new InsufficientStockException();
@@ -122,7 +124,7 @@ public class OrderService {
 
         for (OrderItem orderItem: order.getOrderItems()) {
 
-            Product product = productRepository.findById(orderItem.getProductId())
+            Product product = productRepository.findByIdForUpdate(orderItem.getProductId())
                     .orElseThrow(() -> new ProductNotFoundException(orderItem.getProductId()));
             product.setStock(product.getStock() + orderItem.getQuantity());
         }
