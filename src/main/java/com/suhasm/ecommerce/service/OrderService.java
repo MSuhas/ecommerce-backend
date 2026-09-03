@@ -1,11 +1,15 @@
 package com.suhasm.ecommerce.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suhasm.ecommerce.dto.OrderResponseDTO;
 import com.suhasm.ecommerce.entity.*;
 import com.suhasm.ecommerce.exception.*;
 import com.suhasm.ecommerce.mapper.OrderMapper;
+import com.suhasm.ecommerce.messaging.OrderCreatedEvent;
 import com.suhasm.ecommerce.repository.CartRepository;
 import com.suhasm.ecommerce.repository.OrderRepository;
+import com.suhasm.ecommerce.repository.OutboxEventRepository;
 import com.suhasm.ecommerce.repository.ProductRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static com.suhasm.ecommerce.entity.OrderStatus.*;
 
@@ -29,6 +35,8 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final CurrentUserService currentUserService;
     private final OrderMapper orderMapper;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
 
     public OrderResponseDTO placeOrder() {
         User user = currentUserService.getCurrentUser();
@@ -81,6 +89,37 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
 
         Order savedOrder = orderRepository.save(order);
+
+        String eventId = UUID.randomUUID().toString();
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getId(),
+                user.getId(),
+                eventId,
+                savedOrder.getTotalAmount()
+        );
+
+        String payload;
+
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to serialize OrderCreatedEvent",
+                    e
+            );
+        }
+
+        OutboxEvent outboxEvent = OutboxEvent.builder()
+                .eventType("ORDER_CREATED")
+                .aggregateType("ORDER")
+                .aggregateId(savedOrder.getId())
+                .payload(payload)
+                .createdAt(Instant.now())
+                .status(OutboxStatus.PENDING)
+                .build();
+
+        outboxEventRepository.save(outboxEvent);
+
         cartItems.clear();
 
         return orderMapper.toResponse(savedOrder);
