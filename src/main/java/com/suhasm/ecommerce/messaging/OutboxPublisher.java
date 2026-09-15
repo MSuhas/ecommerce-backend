@@ -2,6 +2,7 @@ package com.suhasm.ecommerce.messaging;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.suhasm.ecommerce.config.RabbitMQConfig;
 import com.suhasm.ecommerce.entity.OutboxEvent;
 import com.suhasm.ecommerce.entity.OutboxStatus;
 import com.suhasm.ecommerce.repository.OutboxEventRepository;

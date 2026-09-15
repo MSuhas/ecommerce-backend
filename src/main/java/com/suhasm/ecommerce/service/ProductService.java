@@ -11,10 +11,13 @@ import com.suhasm.ecommerce.repository.CategoryRepository;
 import com.suhasm.ecommerce.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -57,7 +60,10 @@ public class ProductService {
         return productPage.map(productMapper::toResponse);
     }
 
+    @Cacheable(value = "products", key = "#p0", sync = true)
+    @Transactional(readOnly = true)
     public ProductResponseDTO findById(Long ID) {
+        System.out.println(">>> DATABASE CALLED <<<");
         return productMapper.toResponse(findEntityById(ID));
 
     }
@@ -82,6 +88,8 @@ public class ProductService {
 
     }
 
+    @CacheEvict(value = "products", key = "#p1")
+    @Transactional
     public ProductResponseDTO updateProduct(ProductRequestDTO product, Long ID) {
         Product mProduct = findEntityById(ID);
 
@@ -94,6 +102,8 @@ public class ProductService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @CacheEvict(value = "products", key = "#p0")
+    @Transactional
     public void deleteProduct(Long ID) {
         Product mProduct = findEntityById(ID);
 

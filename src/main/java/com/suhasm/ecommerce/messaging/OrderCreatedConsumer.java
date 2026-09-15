@@ -1,6 +1,6 @@
 package com.suhasm.ecommerce.messaging;
 
-import com.suhasm.ecommerce.entity.ProcessedMessage;
+import com.suhasm.ecommerce.config.RabbitMQConfig;
 import com.suhasm.ecommerce.repository.ProcessedMessageRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

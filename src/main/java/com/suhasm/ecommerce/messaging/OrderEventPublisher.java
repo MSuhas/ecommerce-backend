@@ -1,5 +1,6 @@
 package com.suhasm.ecommerce.messaging;
 
+import com.suhasm.ecommerce.config.RabbitMQConfig;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
