@@ -43,6 +43,8 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/api/payments/webhook")
                                 .permitAll()
+                                .requestMatchers("/api/messaging/kafka/*")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated());
         httpSecurity.sessionManagement(
