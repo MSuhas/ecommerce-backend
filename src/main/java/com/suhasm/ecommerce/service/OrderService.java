@@ -3,14 +3,12 @@ package com.suhasm.ecommerce.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.suhasm.ecommerce.dto.OrderResponseDTO;
+import com.suhasm.ecommerce.dto.ReserveStockResponse;
 import com.suhasm.ecommerce.entity.*;
 import com.suhasm.ecommerce.exception.*;
 import com.suhasm.ecommerce.mapper.OrderMapper;
 import com.suhasm.ecommerce.messaging.OrderCreatedEvent;
-import com.suhasm.ecommerce.repository.CartRepository;
-import com.suhasm.ecommerce.repository.OrderRepository;
-import com.suhasm.ecommerce.repository.OutboxEventRepository;
-import com.suhasm.ecommerce.repository.ProductRepository;
+import com.suhasm.ecommerce.repository.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -20,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.suhasm.ecommerce.entity.OrderStatus.*;
@@ -37,6 +36,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    private final UserRepository userRepository;
 
     public OrderResponseDTO placeOrder() {
         User user = currentUserService.getCurrentUser();
@@ -171,5 +171,83 @@ public class OrderService {
         order.setStatus(CANCELLED);
 
         return orderMapper.toResponse(order);
+    }
+
+    @Transactional
+    public Long createOrderForSaga(ReserveStockResponse reservation, String sagaId,
+                                   Long userId) {
+
+        // 1. Idempotency check
+        Optional<Order> existingOrder =
+                orderRepository.findBySagaId(sagaId);
+
+        if (existingOrder.isPresent()) {
+            return existingOrder.get().getId();
+        }
+
+        // 2. Retrieve original customer
+        User user = userRepository.findById(userId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "User not found: " + userId));
+
+        BigDecimal subtotal = reservation.unitPrice()
+                .multiply(
+                        BigDecimal.valueOf(
+                                reservation.reservedQuantity()
+                        )
+                );
+
+        Order order = Order.builder()
+                .user(user)
+                .status(PENDING)
+                .totalAmount(subtotal)
+                .build();
+
+        OrderItem orderItem = OrderItem.builder()
+                .order(order)
+                .productId(reservation.productId())
+                .productName(reservation.productName())
+                .unitPrice(reservation.unitPrice())
+                .quantity(reservation.reservedQuantity())
+                .subtotal(subtotal)
+                .build();
+
+        order.getOrderItems().add(orderItem);
+
+        Order savedOrder = orderRepository.save(order);
+
+        String eventId = UUID.randomUUID().toString();
+
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getId(),
+                user.getId(),
+                eventId,
+                savedOrder.getTotalAmount()
+        );
+
+        String payload;
+
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(
+                    "Failed to serialize OrderCreatedEvent",
+                    e
+            );
+        }
+
+        OutboxEvent outboxEvent = OutboxEvent.builder()
+                .eventType("ORDER_CREATED")
+                .aggregateType("ORDER")
+                .aggregateId(savedOrder.getId())
+                .payload(payload)
+                .createdAt(Instant.now())
+                .status(OutboxStatus.PENDING)
+                .build();
+
+        outboxEventRepository.save(outboxEvent);
+
+        return savedOrder.getId();
     }
 }

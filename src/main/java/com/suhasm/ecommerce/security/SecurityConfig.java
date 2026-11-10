@@ -45,6 +45,10 @@ public class SecurityConfig {
                                 .permitAll()
                                 .requestMatchers("/api/messaging/kafka/*")
                                 .permitAll()
+                                .requestMatchers("/api/test/product/**")
+                                .permitAll()
+                                .requestMatchers("/api/sagas/orders")
+                                .permitAll()
                                 .anyRequest()
                                 .authenticated());
         httpSecurity.sessionManagement(

@@ -26,7 +26,7 @@ public class Order {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    private User  user;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -49,4 +49,7 @@ public class Order {
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "saga_id", unique = true)
+    private String sagaId;
 }
