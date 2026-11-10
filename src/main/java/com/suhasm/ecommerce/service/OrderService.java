@@ -202,6 +202,7 @@ public class OrderService {
                 .user(user)
                 .status(PENDING)
                 .totalAmount(subtotal)
+                .sagaId(sagaId)
                 .build();
 
         OrderItem orderItem = OrderItem.builder()
